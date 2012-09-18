@@ -79,4 +79,17 @@ describe 'The HelloWorld App' do
       end
     end
   end
+
+  describe 'POST /foobar/twtr' do
+    subject { last_response }
+
+    context 'valid IP' do
+      before do
+        post '/foobar/twtr', File.read(File.expand_path('../../params.json', __FILE__)), 'REMOTE_ADDR' => '127.0.0.2'
+      end
+
+      its(:status) { should eq 403 }
+      its(:body) { should eq "Access forbidden" }
+    end
+  end
 end

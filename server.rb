@@ -18,6 +18,8 @@ post '/:service/twtr' do |service|
     data = JSON.parse(request.body.read)
   when 'github'
     data = JSON.parse(params[:payload])
+  else
+    return 403
   end
   tweet_with(data)
 end
