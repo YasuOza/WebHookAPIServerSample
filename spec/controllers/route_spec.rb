@@ -45,4 +45,38 @@ describe 'The HelloWorld App' do
       end
     end
   end
+
+
+  describe 'POST /github' do
+    subject { last_response }
+
+    describe '/foobar' do
+      before do
+        post '/github/foobar', {key: 'value', key2: 'value2'}
+      end
+
+      its(:body) { should eq "This is nowhere to be found" }
+    end
+
+    describe '/twtr' do
+      context 'invalid IP ' do
+        before do
+          post '/github/twtr', File.read(File.expand_path('../../params.json', __FILE__)), 'REMOTE_ADDR' => '255.255.255.255'
+        end
+
+        its(:status) { should eq 403 }
+        its(:body) { should eq "Access forbidden" }
+      end
+
+      context 'valid IP' do
+        before do
+          post '/github/twtr',
+               {payload: File.read(File.expand_path('../../params.json', __FILE__))},
+               'REMOTE_ADDR' => ['207.97.227.253', '50.57.128.197', '108.171.174.178'][rand(3)]
+        end
+
+        its(:body) { should eq JSON.generate(message: 'Update status 4 times') }
+      end
+    end
+  end
 end

@@ -5,31 +5,57 @@ require 'json'
 # Configuration file
 require File.expand_path('../config/setting', __FILE__)
 
-post '/gitlab/twtr' do
+# /:service/twtr
+# Supprt /gitlab/twtr and /github/twtr
+#
+# Receive web post_receive hook and update twitter status
+post '/:service/twtr' do |service|
   # Filter via ip address
-  # If you want to filter with remote IP
-  # Set allowed ip in config/settings.rb
-  return 403 unless request.ip == settings.allowed_ip
+  return 403 unless settings.allowed_ips.include?(request.ip)
 
-  data = JSON.parse(request.body.read)
+  case service
+  when 'gitlab'
+    data = JSON.parse(request.body.read)
+  when 'github'
+    data = JSON.parse(params[:payload])
+  end
+  tweet_with(data)
+end
+
+# Global api
+#
+# 404 Not found
+not_found do
+  'This is nowhere to be found'
+end
+
+# Global api
+#
+# 403 Access forbidden
+error 403 do
+  'Access forbidden'
+end
+
+# Private method
+# tweet_with +json_parsed_hash+ and return json serialized update result message
+#
+# tweet_with(hash_data)
+# # => {"message": "Upate status 4 times"}
+def tweet_with(data)
   update_count = 0
   data['commits'].each do |commit|
-    tweet("@#{settings.mention_to} #{data['repository']['name']} - #{commit['message']}")
+    update_status("@#{settings.mention_to} #{data['repository']['name']} - #{commit['message']}")
     update_count += 1
   end
   JSON.generate(message: "Update status #{update_count} " + (update_count > 1 ? "times" : "time"))
 end
 
-not_found do
-  'This is nowhere to be found'
-end
-
-error 403 do
-  'Access forbidden'
-end
-
-private
-def tweet(text)
+# Private method
+# update_status +string+ calls twitter api
+#
+# === Return examples
+# {"message": "Upate status 4 times"}
+def update_status(text)
   return unless production?
   Twitter.update(text)
 end
