@@ -44,7 +44,7 @@ end
 def tweet_with(data)
   update_count = 0
   data['commits'].each do |commit|
-    update_status("@#{settings.mention_to} #{data['repository']['name']} - #{commit['message']}")
+    update_status_with("@#{settings.mention_to} #{data['repository']['name']} - #{commit['message']}")
     update_count += 1
   end
   JSON.generate(message: "Update status #{update_count} " + (update_count > 1 ? "times" : "time"))
@@ -52,10 +52,7 @@ end
 
 # Private method
 # update_status +string+ calls twitter api
-#
-# === Return examples
-# {"message": "Upate status 4 times"}
-def update_status(text)
+def update_status_with(text)
   return unless production?
   Twitter.update(text)
 end
