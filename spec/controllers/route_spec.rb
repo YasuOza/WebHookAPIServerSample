@@ -95,7 +95,7 @@ describe 'Post receive api Server' do
         before do
           config_file_path = File.join(App.root, 'config/jenkins.yml')
           config = YAML.load_file(config_file_path)
-          _, scheme, host_name = config['server'].match(%r((https?)://([\w\.]+))), $1, $2
+          scheme, host_name = config['server'].match(%r((https?)://([\w\.]+))).captures
 
           endpoint = "#{scheme}://#{config['user']}:#{config['user_token']}@#{host_name}"
           endpoint << "/job/HelloJenkinsJob"
