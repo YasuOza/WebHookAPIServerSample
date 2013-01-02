@@ -29,6 +29,7 @@ end
 # RSpec configuration
 require 'rspec'
 require 'rack/test'
+require 'webmock/rspec'
 
 RSpec.configure do |conf|
   conf.include Rack::Test::Methods
@@ -36,3 +37,4 @@ end
 
 # Require libraries
 require 'json'
+require 'yaml'

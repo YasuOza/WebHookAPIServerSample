@@ -1,9 +1,9 @@
 require File.expand_path('../../spec_helper', __FILE__)
 
 # Target file
-require File.expand_path("#{App.root}/server", __FILE__)
+require "#{App.root}/server"
 
-describe 'The HelloWorld App' do
+describe 'Post receive api Server' do
   describe :not_found do
     subject { last_response }
 
@@ -29,7 +29,8 @@ describe 'The HelloWorld App' do
     describe '/twtr' do
       context 'invalid IP ' do
         before do
-          post '/gitlab/twtr', File.read(File.expand_path('../../params.json', __FILE__)), 'REMOTE_ADDR' => '255.255.255.255'
+          post '/gitlab/twtr', File.read(File.expand_path('../../params.json', __FILE__)),
+               'REMOTE_ADDR' => '255.255.255.255'
         end
 
         its(:status) { should eq 403 }
@@ -38,14 +39,14 @@ describe 'The HelloWorld App' do
 
       context 'valid IP' do
         before do
-          post '/gitlab/twtr', File.read(File.expand_path('../../params.json', __FILE__)), 'REMOTE_ADDR' => '127.0.0.2'
+          post '/gitlab/twtr', File.read(File.expand_path('../../params.json', __FILE__)),
+               'REMOTE_ADDR' => '127.0.0.2'
         end
 
         its(:body) { should eq JSON.generate(message: 'Update status 4 times') }
       end
     end
   end
-
 
   describe 'POST /github' do
     subject { last_response }
@@ -61,7 +62,8 @@ describe 'The HelloWorld App' do
     describe '/twtr' do
       context 'invalid IP ' do
         before do
-          post '/github/twtr', File.read(File.expand_path('../../params.json', __FILE__)), 'REMOTE_ADDR' => '255.255.255.255'
+          post '/github/twtr', File.read(File.expand_path('../../params.json', __FILE__)),
+               'REMOTE_ADDR' => '255.255.255.255'
         end
 
         its(:status) { should eq 403 }
@@ -78,18 +80,36 @@ describe 'The HelloWorld App' do
         its(:body) { should eq JSON.generate(message: 'Update status 4 times') }
       end
     end
-  end
 
-  describe 'POST /foobar/twtr' do
-    subject { last_response }
+    describe '/jenkins/trigger' do
+      context 'invalid IP ' do
+        before do
+          post '/jenkins/trigger', 'REMOTE_ADDR' => '255.255.255.255'
+        end
 
-    context 'valid IP' do
-      before do
-        post '/foobar/twtr', File.read(File.expand_path('../../params.json', __FILE__)), 'REMOTE_ADDR' => '127.0.0.2'
+        its(:status) { should eq 403 }
+        its(:body) { should eq "Access forbidden" }
       end
 
-      its(:status) { should eq 403 }
-      its(:body) { should eq "Access forbidden" }
+      context 'valid IP' do
+        before do
+          config_file_path = File.join(App.root, 'config/jenkins.yml')
+          config = YAML.load_file(config_file_path)
+          _, scheme, host_name = config['server'].match(%r((https?)://([\w\.]+))), $1, $2
+
+          endpoint = "#{scheme}://#{config['user']}:#{config['user_token']}@#{host_name}"
+          endpoint << "/job/HelloJenkinsJob"
+          endpoint << "/build?cause=git%20push&token=#{config['default_build_token']}"
+
+          stub_request(:get, endpoint).to_return(:status => [302, "Found"])
+
+          post '/jenkins/trigger?jobname=HelloJenkinsJob',
+               nil,
+               'REMOTE_ADDR' => '127.0.0.2'
+        end
+
+        its(:body) { should eq '302: Found' }
+      end
     end
   end
 end

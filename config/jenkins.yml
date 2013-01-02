@@ -1,0 +1,4 @@
+server: https://your.jenkins.com
+default_build_token: abcabcabc123123123
+user: you
+user_token: abcabcabc123123123
