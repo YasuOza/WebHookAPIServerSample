@@ -7,7 +7,7 @@ describe HipChatter do
   let!(:commits) { payload['commits'] }
 
   describe '#notify' do
-    subject { HipChatter.new(repository: repository, commits: commits).notify(to: 'my-room', from: 'me') }
+    subject { HipChatter.new(repository: repository, commits: commits).notify(token: 'my-token', to: 'my-room', from: 'me') }
     it do
       message = <<-MEG
 <a href='http://source.yasuoza.com/HelloSinatraServer'>HelloSinatraServer</a> is just updated
@@ -18,7 +18,8 @@ describe HipChatter do
       MEG
 
       client = instance_spy(HipChat::Client)
-      expect_any_instance_of(HipChat::Client).to receive(:[]).with('my-room').and_return(client)
+      expect(HipChat::Client).to receive(:new).with('my-token', api_version: 'v2').and_return(client)
+      expect(client).to receive(:[]).with('my-room')
       expect(client).to receive(:send).with('me', message)
       subject
     end

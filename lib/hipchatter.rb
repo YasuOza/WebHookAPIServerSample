@@ -1,14 +1,13 @@
 require 'hipchat'
 
 class HipChatter
-  def initialize(repository: repository, commits: commits)
+  def initialize(repository:, commits:)
     @repository = repository
     @commits = commits
   end
 
-  def notify(to: 'room', from: 'HipChatter')
-    api_token = 'hello-api'
-    client = HipChat::Client.new(api_token, api_version: 'v2')
+  def notify(token:, to:, from: 'HipChatter')
+    client = HipChat::Client.new(token, api_version: 'v2')
     client[to].send(from, build_message)
   end
 
