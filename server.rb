@@ -3,12 +3,32 @@ require 'twitter'
 require 'json'
 
 # Configuration file
-require File.expand_path('../config/setting', __FILE__)
+require File.expand_path('config/setting', __dir__)
 
 # require libraries
 Dir[File.join(File.expand_path('../', __FILE__), 'lib/**/*.rb')].each do |file|
   require file
 end
+
+# /:service/hipchat/:room?token=hipchat_api_token
+# Supprt gitlab, github, backlog service
+#
+# Receive web post_receive hook and send hipchat message
+post '/:service/hipchat/:room' do |service, room|
+  repository, commits =
+    case service
+    when 'gitlab'
+      data = JSON.parse(request.body.read)
+      [data['repository'], data['commits']]
+    when 'github', 'backlog'
+      data = JSON.parse(params[:payload])
+      [data['repository'], data['commits']]
+    end
+  HipChatter.new(repository: repository, commits: commits)
+            .notify(token: params[:token], to: room, from: service)
+  "OK"
+end
+
 
 # /:service/twtr
 # Supprt /gitlab/twtr and /github/twtr
@@ -24,7 +44,7 @@ post '/:service/twtr' do |service|
   when 'github'
     data = JSON.parse(params[:payload])
   end
-  Tweeter.tweet_with(data)
+  Tweeter.tweet_with(settings.twtrclient, data, settings.mention_to)
 end
 
 # /:service/twtr
