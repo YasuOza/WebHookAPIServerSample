@@ -9,4 +9,6 @@ group :development do
   gem 'webmock'
   gem 'rack-test'
   gem 'rspec'
+  gem 'rspec-its'
+  gem 'pry'
 end
