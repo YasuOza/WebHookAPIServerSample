@@ -14,13 +14,15 @@ class HipChatter
   private
 
   def build_message
-    message = "<a href='#{@repository['url']}'>#{@repository['name']}</a> is just updated<br/>"
+    message = "<a href='#{@repository['url']}'>#{@repository['name']}</a> is just updated"
     message += commits_message
   end
 
   def commits_message
-    @commits.reduce('') do |str, commit|
-      str + "- #{commit['message']} (<a href='#{commit['url']}'>#{commit['id'][0..3]}</a>)<br/>"
+    limit = 4
+    message = @commits[0...limit].reduce('') do |str, commit|
+      str + "<br/>- #{commit['message']} (<a href='#{commit['url']}'>#{commit['id'][0..7]}</a>)"
     end
+    @commits.length > limit ? message += "<br/>- and #{@commits.length - limit} more" : message
   end
 end
