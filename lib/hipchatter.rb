@@ -7,20 +7,20 @@ class HipChatter
   end
 
   def notify(token:, to:, from: 'HipChatter')
-    client = HipChat::Client.new(token, api_version: 'v2')
+    client = HipChat::Client.new(token)
     client[to].send(from, build_message)
   end
 
   private
 
   def build_message
-    message = "<a href='#{@repository['url']}'>#{@repository['name']}</a> is just updated\n"
+    message = "<a href='#{@repository['url']}'>#{@repository['name']}</a> is just updated<br/>"
     message += commits_message
   end
 
   def commits_message
     @commits.reduce('') do |str, commit|
-      str + "- #{commit['message']} (<a href='#{commit['url']}'>#{commit['id']}</a>)\n"
+      str + "- #{commit['message']} (<a href='#{commit['url']}'>#{commit['id'][0..3]}</a>)<br/>"
     end
   end
 end

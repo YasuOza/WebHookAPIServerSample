@@ -17,12 +17,15 @@ end
 post '/:service/hipchat/:room' do |service, room|
   repository, commits =
     case service
-    when 'gitlab'
+    when /gitlab/i
       data = JSON.parse(request.body.read)
       [data['repository'], data['commits']]
-    when 'github', 'backlog'
-      data = JSON.parse(params[:payload])
+    when /github/i
+      data = JSON.parse(request.body.read)['payload']
       [data['repository'], data['commits']]
+    when /backlog/i
+      data = JSON.parse(request.body.read)['payload']
+      [data['repository'], data['revisions']]
     end
   HipChatter.new(repository: repository, commits: commits)
             .notify(token: params[:token], to: room, from: service)
