@@ -15,20 +15,20 @@ end
 #
 # Receive web post_receive hook and send hipchat message
 post '/:service/hipchat/:room' do |service, room|
-  repository, commits =
+  repository, commits, ref =
     case service
     when /gitlab/i
       data = JSON.parse(request.body.read)
-      [data['repository'], data['commits']]
+      [data['repository'], data['commits'], data['ref']]
     when /github/i
       data = JSON.parse(request.body.read)['payload']
-      [data['repository'], data['commits']]
+      [data['repository'], data['commits'], data['ref']]
     when /backlog/i
       body = URI.decode_www_form_component(request.body.read).gsub(/^payload=/, '')
       data = JSON.parse(body)
-      [data['repository'], data['revisions']]
+      [data['repository'], data['revisions'], data['ref']]
     end
-  HipChatter.new(repository: repository, commits: commits)
+  HipChatter.new(repository: repository, commits: commits, ref: ref)
             .notify(token: params[:token], to: room, from: service)
   "OK"
 end

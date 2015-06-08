@@ -1,9 +1,10 @@
 require 'hipchat'
 
 class HipChatter
-  def initialize(repository:, commits:)
+  def initialize(repository:, commits:, ref: 'refs/heads/master')
     @repository = repository
     @commits = commits
+    @branch = ref.split('refs/heads/', 2).last
   end
 
   def notify(token:, to:, from: 'HipChatter')
@@ -14,7 +15,7 @@ class HipChatter
   private
 
   def build_message
-    message = "<a href='#{@repository['url']}'>#{@repository['name']}</a> is just updated"
+    message = "<a href='#{@repository['url']}'>#{@repository['name']}</a> (<a href='#{@repository['url']}/tree/#{@branch}'>#{@branch}</a>) is just updated"
     message += commits_message
   end
 
