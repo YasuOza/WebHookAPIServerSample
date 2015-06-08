@@ -23,7 +23,7 @@ class HipChatter
   def commits_message
     limit = 4
     message = @commits[0...limit].reduce('') do |str, commit|
-      str + "<br/>- #{commit['message']} (<a href='#{commit['url']}'>#{commit['id'][0..7]}</a>)"
+      str + "<br/>- #{commit['message'].split("\n").first} (<a href='#{commit['url']}'>#{commit['id'][0..7]}</a>)"
     end
     @commits.length > limit ? message += "<br/>- and #{@commits.length - limit} more" : message
   end
