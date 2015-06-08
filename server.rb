@@ -24,7 +24,8 @@ post '/:service/hipchat/:room' do |service, room|
       data = JSON.parse(request.body.read)['payload']
       [data['repository'], data['commits']]
     when /backlog/i
-      data = JSON.parse(request.body.read)['payload']
+      body = URI.decode_www_form_component(request.body.read).gsub(/^payload=/, '')
+      data = JSON.parse(body)
       [data['repository'], data['revisions']]
     end
   HipChatter.new(repository: repository, commits: commits)
