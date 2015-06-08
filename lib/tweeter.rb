@@ -1,5 +1,3 @@
-require 'pry'
-
 class Tweeter
   # tweet_with +json_parsed_hash+ and return json serialized update result message
   #
