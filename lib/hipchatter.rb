@@ -8,7 +8,7 @@ class HipChatter
 
   def notify(token:, to:, from: 'HipChatter')
     client = HipChat::Client.new(token)
-    client[to].send(from, build_message)
+    client[to].send(from, build_message, notify: true)
   end
 
   private
