@@ -30,8 +30,9 @@ post '/backlog/slack/:channel' do |channel|
   repository = data['repository']
   commits = data['revisions']
   ref = data['ref']
-  SlackNotification.new(repository: repository, commits: commits, ref: ref)
-                   .notify(webhook_url: settings.slack_webhook_url, channel: channel)
+  after = data['after']
+  SlackNotification.new.notify(repository: repository, commits: commits, ref: ref,
+                               after: after, webhook_url: settings.slack_webhook_url, channel: channel)
   "OK"
 end
 
