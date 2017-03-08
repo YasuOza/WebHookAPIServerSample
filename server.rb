@@ -1,5 +1,4 @@
 require 'sinatra'
-require 'twitter'
 require 'json'
 
 # Configuration file
@@ -10,56 +9,18 @@ Dir[File.join(File.expand_path('../', __FILE__), 'lib/**/*.rb')].each do |file|
   require file
 end
 
-# /:service/hipchat/:room?token=hipchat_api_token
-# Supprt gitlab, github, backlog service
-#
+# /hipchat/hipchat/:room?token=hipchat_api_token
 # Receive web post_receive hook and send hipchat message
-post '/:service/hipchat/:room' do |service, room|
-  repository, commits, ref =
-    case service
-    when /gitlab/i
-      data = JSON.parse(request.body.read)
-      [data['repository'], data['commits'], data['ref']]
-    when /github/i
-      data = JSON.parse(request.body.read)['payload']
-      [data['repository'], data['commits'], data['ref']]
-    when /backlog/i
-      body = URI.decode_www_form_component(request.body.read).gsub(/^payload=/, '')
-      data = JSON.parse(body)
-      [data['repository'], data['revisions'], data['ref']]
-    end
+post '/backlog/hipchat/:room' do |room|
+  body = URI.decode_www_form_component(request.body.read).gsub(/^payload=/, '')
+  data = JSON.parse(body)
+
+  repository = data['repository']
+  commits = data['revisions']
+  ref = data['ref']
   HipChatter.new(repository: repository, commits: commits, ref: ref)
             .notify(token: params[:token], to: room, from: service)
   "OK"
-end
-
-
-# /:service/twtr
-# Supprt /gitlab/twtr and /github/twtr
-#
-# Receive web post_receive hook and update twitter status
-post '/:service/twtr' do |service|
-  # Filter via ip address
-  return 403 unless settings.allowed_ips.include?(request.ip)
-
-  case service
-  when 'gitlab'
-    data = JSON.parse(request.body.read)
-  when 'github'
-    data = JSON.parse(params[:payload])
-  end
-  Tweeter.tweet_with(settings.twtrclient, data, settings.mention_to)
-end
-
-# /:service/twtr
-# Supprt /gitlab/twtr and /github/twtr
-#
-# Receive web post_receive hook and update twitter status
-post '/jenkins/trigger' do
-  # Filter via ip address
-  return 403 unless settings.allowed_ips.include?(request.ip)
-
-  TriggerJenkins.new(params[:jobname], build_token: params[:build_token]).trigger
 end
 
 # Global api

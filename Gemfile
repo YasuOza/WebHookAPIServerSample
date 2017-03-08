@@ -1,15 +1,8 @@
 source 'https://rubygems.org'
-ruby '2.2.2'
+ruby '2.4.0'
 
+gem 'json'
 gem 'rack'
 gem 'sinatra'
-gem 'twitter'
 gem 'hipchat'
-
-group :development do
-  gem 'webmock'
-  gem 'rack-test'
-  gem 'rspec'
-  gem 'rspec-its'
-  gem 'pry'
-end
+gem 'slack-notifier'
