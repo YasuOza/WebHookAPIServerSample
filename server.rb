@@ -23,6 +23,18 @@ post '/backlog/hipchat/:room' do |room|
   "OK"
 end
 
+post '/backlog/slack/:channel' do |channel|
+  body = URI.decode_www_form_component(request.body.read).gsub(/^payload=/, '')
+  data = JSON.parse(body)
+
+  repository = data['repository']
+  commits = data['revisions']
+  ref = data['ref']
+  SlackNotification.new(repository: repository, commits: commits, ref: ref)
+                   .notify(webhook_url: settings.slack_webhook_url, channel: channel)
+  "OK"
+end
+
 # Global api
 #
 # 404 Not found
